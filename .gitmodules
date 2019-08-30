@@ -1,0 +1,3 @@
+[submodule "vendors/deep_sort"]
+	path = vendors/deep_sort
+	url = https://github.com/nwojke/deep_sort.git
