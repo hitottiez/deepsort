@@ -27,6 +27,21 @@ docker run -d -it --name <container_name> \
 docker exec -it <container_name> /bin/bash
 ```
 
+## CNN特徴量ファイルの作成
+
+自分でCNN特徴量ファイルを作成する場合は、以下のように行います。
+
+まず、[DeepSORTオリジナル](https://github.com/nwojke/deep_sort)のREADME.mdを参考に、モデルをダウンロードします。
+
+以下のコマンドを実行します。
+```
+python cnn_feature.py \
+    --img_dir_path /mnt/dataset/okutama_action_dataset/okutama_3840_2160/images/  \
+    --weight_file <path/to/mars-small128.ckpt-68577>
+```
+
+`/mnt/dataset/okutama_action_dataset/okutama_3840_2160/images/**/feature_results/`に`cnn.txt`が作成されます。
+
 ## 追跡実行
 
 事前にffmpegでokutamaデータセットを画像に展開し、各特徴量ファイル(`det.txt`, `cnn.txt`, `{rgb, flow, fusion}_.txt`)を所定の場所に設置する必要があります。
@@ -80,11 +95,12 @@ python okutama_moteval.py \
 ### 行動認識結果mAP評価
 
 MOTA評価と同様の引数で実行します。
+ただし、`gt_root`にはマルチラベルのディレクトリを指定する点に注意して下さい。
 
 ```
 cd tools
 python okutama_acteval.py \
-    --gt_root /mnt/dataset/okutama_action_dataset/okutama_3840_2160/labels/test/ \
+    --gt_root /mnt/dataset/okutama_action_dataset/okutama_3840_2160/multi_labels/test/ \
     --save_root /mnt/dataset/okutama_action_dataset/deepsort_tracking_result/
 ```
 

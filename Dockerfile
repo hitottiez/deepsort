@@ -120,4 +120,7 @@ RUN pip install motmetrics natsort
 
 RUN apt-get update && apt-get install -y ffmpeg
 
+RUN    pip install tensorflow-gpu==1.4.0 \
+    && pip install visdom==0.1.8.8
+
 WORKDIR /opt/multi_actrecog/deepsort
