@@ -1,19 +1,15 @@
 # deepsort
+This repository includes modified code of [DeepSORT](https://github.com/nwojke/deep_sort) and it can utilize the primitive action features for human tracking.
 
-このリポジトリは、[オリジナル](https://github.com/nwojke/deep_sort)をカスタマイズして、追跡時に行動認識結果を使用するようにしたソースを含んでいます。
-
-## クローン＆Dockerビルド
-
+## Clone and build a docker image
 ```
 git clone --recursive https://github.com/hitottiez/deepsort.git
 cd deepsort
 docker build -t <tagname> .
 ```
 
-## Docker起動&コンテナログイン&セットアップ
-
-もしデータセットを特定のディレクトリで管理している場合は、以下のようにマウントして下さい。
-
+## Run a docker container and login it
+Run:
 ```
 docker run -d -it --name <container_name> \
     --mount type=bind,src=/<path/to/deepsort>/,dst=/opt/multi_actrecog/deepsort \
@@ -21,35 +17,27 @@ docker run -d -it --name <container_name> \
     <image name> /bin/bash
 ```
 
-正常に起動したら、以下のコマンドでログインします。
-
+Login:
 ```
 docker exec -it <container_name> /bin/bash
 ```
 
-## CNN特徴量ファイルの作成
+## Extract CNN features
+Download models from [DeepSORT](https://github.com/nwojke/deep_sort).
 
-自分でCNN特徴量ファイルを作成する場合は、以下のように行います。
-
-まず、[DeepSORTオリジナル](https://github.com/nwojke/deep_sort)のREADME.mdを参考に、モデルをダウンロードします。
-
-以下のコマンドを実行します。
+Run:
 ```
 python cnn_feature.py \
     --img_dir_path /mnt/dataset/okutama_action_dataset/okutama_3840_2160/images/  \
     --weight_file <path/to/mars-small128.ckpt-68577>
 ```
 
-`/mnt/dataset/okutama_action_dataset/okutama_3840_2160/images/**/feature_results/`に`cnn.txt`が作成されます。
+Then, `cnn.txt` is created in `/mnt/dataset/okutama_action_dataset/okutama_3840_2160/images/**/feature_results/`.
 
-## 追跡実行
+## Run human tracking and action recognition
+Convert Okutama-Action dataset to split images using ffmpeg and put feature files (`det.txt`, `cnn.txt`, `{rgb, flow, fusion}_.txt`) in the proper directory (refer [mht-paf](https://github.com/hitottiez/mht-paf)).
 
-事前にffmpegでokutamaデータセットを画像に展開し、各特徴量ファイル(`det.txt`, `cnn.txt`, `{rgb, flow, fusion}_.txt`)を所定の場所に設置する必要があります。
-詳細は[mht-paf](https://github.com/hitottiez/mht-paf)を参照して下さい。
-
-以下はデータセットを`/mnt/dataset/okutama_action_dataset/okutama_3840_2160/`に設置し、`rgb_tsn.txt`を使用する例です。
-もし行動認識結果を使用しない場合は、`config/multi_actrecog.ini`の`enable_tsn_matching`を`false`にしてください（deep_sortオリジナルと同じ挙動になります）。
-
+Example in case that dataset is `/mnt/dataset/okutama_action_dataset/okutama_3840_2160/` and the file of primitive action feature is `rgb_tsn.txt`:
 ```
 python batch_okutama.py \
     --data_root /mnt/dataset/okutama_action_dataset/okutama_3840_2160/ \
@@ -57,10 +45,10 @@ python batch_okutama.py \
     --tsn_modality rgb \
     --worker 5
 ```
+When not using the primitive action feature, set `enable_tsn_matching` in `config/multi_actrecog.ini` as `false`.
+(as same as original DeepSORT)
 
-実行完了後、`/mnt/dataset/okutama_action_dataset/deepsort_tracking_result`に
-以下のディレクトリ構造で結果が`contextlog.dat`に出力されます。
-
+Then, `contextlog.dat` is created in `/mnt/dataset/okutama_action_dataset/deepsort_tracking_result` as the following directory structure:
 ```
 /mnt/dataset/okutama_action_dataset/deepsort_tracking_result/
 ├── 1.1.8
@@ -76,12 +64,10 @@ python batch_okutama.py \
 └── 2.2.3
 ```
 
-## 評価
+## Evaluation
 
-### MOTA 評価
-
-`--save_root`に、追跡結果が含まれるディレクトリを指定して実行します。
-
+### Human tracking (Recal, Precision, ID switch, MOTA, ...)
+Set `--save_root` as the directory where the tracking results are stored and run:
 ```
 cd tools
 python okutama_moteval.py \
@@ -89,23 +75,19 @@ python okutama_moteval.py \
     --save_root /mnt/dataset/okutama_action_dataset/deepsort_tracking_result/
 ```
 
-実行後、結果がコンソールに出力されます。
-また、同様の結果が`--save_root`で指定したディレクトリ内の`motmetric.csv`に書き込まれます。
+Then, the evaluation results are displayed in the console and saved in `motmetric.csv`.
 
-### 行動認識結果mAP評価
-
-MOTA評価と同様の引数で実行します。
-ただし、`gt_root`にはマルチラベルのディレクトリを指定する点に注意して下さい。
-
+### Action detection (mAP)
+Run:
 ```
 cd tools
 python okutama_acteval.py \
     --gt_root /mnt/dataset/okutama_action_dataset/okutama_3840_2160/multi_labels/test/ \
     --save_root /mnt/dataset/okutama_action_dataset/deepsort_tracking_result/
 ```
+Note that `gt_root` need to be set as the multilabel directory.
 
-結果が以下のように出力されます。
-
+The evaluation results are saved in `eval_all.csv`.
 ```
                    1.2.10     1.1.9         2.2.1     1.2.3    2.2.10     2.1.8     2.2.3     1.1.8     1.2.1     2.1.9       ALL
 Calling          0.007968  0.000000  0.000000e+00  0.000000  0.000000  0.000000  0.000000  0.000000  0.003546  0.000000  0.002530
