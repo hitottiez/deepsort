@@ -1,15 +1,19 @@
 # deepsort
 This repository includes modified code of [original deep_sort](https://github.com/nwojke/deep_sort) and it can utilize the primitive action features for human tracking.
 
-## Cloning this repogitory and building a docker image
+## Setup
+Clone this repogitory:
 ```
 git clone --recursive https://github.com/hitottiez/deepsort.git
+```
+
+Building a docker image:
+```
 cd deepsort
 docker build -t <tagname> .
 ```
 
-## Running a docker container and login
-Run:
+Run a docker container:
 ```
 docker run -d -it --name <container_name> \
     --mount type=bind,src=/<path/to/deepsort>/,dst=/opt/multi_actrecog/deepsort \
