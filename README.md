@@ -1,14 +1,14 @@
 # deepsort
-This repository includes modified code of [DeepSORT](https://github.com/nwojke/deep_sort) and it can utilize the primitive action features for human tracking.
+This repository includes modified code of [original deep_sort](https://github.com/nwojke/deep_sort) and it can utilize the primitive action features for human tracking.
 
-## Clone and build a docker image
+## Cloning this repogitory and building a docker image
 ```
 git clone --recursive https://github.com/hitottiez/deepsort.git
 cd deepsort
 docker build -t <tagname> .
 ```
 
-## Run a docker container and login it
+## Running a docker container and login
 Run:
 ```
 docker run -d -it --name <container_name> \
@@ -22,8 +22,8 @@ Login:
 docker exec -it <container_name> /bin/bash
 ```
 
-## Extract CNN features
-Download models from [DeepSORT](https://github.com/nwojke/deep_sort).
+## Extraction of CNN features
+Download models from [original deep_sort](https://github.com/nwojke/deep_sort).
 
 Run:
 ```
@@ -34,7 +34,7 @@ python cnn_feature.py \
 
 Then, `cnn.txt` is created in `/mnt/dataset/okutama_action_dataset/okutama_3840_2160/images/**/feature_results/`.
 
-## Run human tracking and action recognition
+## Running human tracking and action recognition
 Convert Okutama-Action dataset to split images using ffmpeg and put feature files (`det.txt`, `cnn.txt`, `{rgb, flow, fusion}_.txt`) in the proper directory (refer [mht-paf](https://github.com/hitottiez/mht-paf)).
 
 Example in case that dataset is `/mnt/dataset/okutama_action_dataset/okutama_3840_2160/` and the file of primitive action feature is `rgb_tsn.txt`:
@@ -46,7 +46,7 @@ python batch_okutama.py \
     --worker 5
 ```
 When not using the primitive action feature, set `enable_tsn_matching` in `config/multi_actrecog.ini` as `false`.
-(as same as original DeepSORT)
+(as same as original deep_sort)
 
 Then, `contextlog.dat` is created in `/mnt/dataset/okutama_action_dataset/deepsort_tracking_result` as the following directory structure:
 ```
@@ -65,8 +65,7 @@ Then, `contextlog.dat` is created in `/mnt/dataset/okutama_action_dataset/deepso
 ```
 
 ## Evaluation
-
-### Human tracking (Recal, Precision, ID switch, MOTA, ...)
+### Human tracking (Recall, Precision, ID switch, MOTA, ...)
 Set `--save_root` as the directory where the tracking results are stored and run:
 ```
 cd tools
